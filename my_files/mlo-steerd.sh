@@ -78,6 +78,31 @@ get_mlmr_macs() {
     '
 }
 
+# Return "MAC:BAND" for each EMLSR client (max_simul_links=1) showing active link
+get_emlsr_active() {
+    local emlsr_macs
+    emlsr_macs=$(hostapd_cli -i "$MLO_IF" all_sta 2>/dev/null | awk '
+        /^[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/ { mac = $1 }
+        /max_simul_links=1/ { print mac }
+    ')
+    [ -z "$emlsr_macs" ] && return
+    iw dev "$MLO_IF" station dump 2>/dev/null | awk -v macs="$emlsr_macs" '
+        BEGIN {
+            n = split(macs, m, "\n")
+            for (i=1;i<=n;i++) is_emlsr[m[i]]=1
+            band[0]="2.4G"; band[1]="5G"; band[2]="6G"
+        }
+        /^Station / { cur_mac=$2; cur_link=-1 }
+        /Link [0-9]+:/ {
+            tmp=$0; sub(/.*Link /, "", tmp); sub(/:.*/, "", tmp); cur_link=tmp+0
+        }
+        cur_mac in is_emlsr && cur_link>=0 && /signal:/ && /\[/ {
+            sig=$0; sub(/.*signal:[[:space:]]*/,"",sig); sub(/[[:space:]].*/, "",sig)
+            if (sig+0 != 0) { printf "%s:%s ", cur_mac, band[cur_link]; cur_link=-1 }
+        }
+    '
+}
+
 # Apply Neg-TTLM TID→link mapping for one MLMR client MAC
 # active_mask: bitmask of currently enabled links (bit0=2.4G, bit1=5G, bit2=6G)
 # TID priority:
@@ -207,9 +232,11 @@ while true; do
     [ "$WANT_DISABLE_5" -eq 1 ] && MASK=$((MASK | 2))
     [ "$WANT_DISABLE_6" -eq 1 ] && MASK=$((MASK | 4))
 
-    # --- Detect MLMR clients ---
+    # --- Detect MLMR and EMLSR clients ---
     MLMR_MACS=$(get_mlmr_macs)
     MLMR_COUNT=$(echo "$MLMR_MACS" | grep -c '[0-9a-f]')
+    EMLSR_COUNT=$((CLIENTS - MLMR_COUNT))
+    EMLSR_INFO=$(get_emlsr_active)
 
     # --- Apply policy ---
     if [ "$MASK" -gt 0 ]; then
@@ -246,7 +273,7 @@ while true; do
 
     PREV_MASK=$MASK
 
-    log "clients=$CLIENTS mlmr=$MLMR_COUNT | $SNR_INFO | $STATUS"
+    log "clients=$CLIENTS mlmr=$MLMR_COUNT emlsr=$EMLSR_COUNT($EMLSR_INFO)| $SNR_INFO | $STATUS"
 
     sleep "$INTERVAL"
 done
