@@ -198,12 +198,28 @@ async function wizard_country(country) {
     return { ok: true, restartRequired: 'reboot', errors: [] };
 }
 
+// --- STEERD ---
+
+async function load_steerd() {
+    const res = await layer2.steerd_get_status();
+    return res.ok ? res.data : { running: false, pid: null, log: [] };
+}
+
+async function steerd_start() {
+    return layer2.steerd_start();
+}
+
+async function steerd_stop() {
+    return layer2.steerd_stop();
+}
+
 // --- MODULE EXPORT ---
 
 const Layer3 = {
     load_all, load_diag, load_channels, scan,
     start_apply, poll_apply,
-    wizard_ap, wizard_mlo, wizard_sta, wizard_relayd, wizard_repeater, wizard_country
+    wizard_ap, wizard_mlo, wizard_sta, wizard_relayd, wizard_repeater, wizard_country,
+    load_steerd, steerd_start, steerd_stop
 };
 
 return baseclass.extend(Layer3);

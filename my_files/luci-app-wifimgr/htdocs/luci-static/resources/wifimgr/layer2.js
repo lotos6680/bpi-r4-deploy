@@ -785,15 +785,17 @@ async function clients_get_all() {
                     rx_bitrate: ldata['rx bitrate'] || null
                 }));
 
+                const sf = staFlags[mac];
                 clients.push({
                     mac:            sta.mac,
                     ifname:         sta.iface || ifname,
                     is_mld:         links.length > 0,
-                    flags:          extractClientFlags(staFlags[mac]),
+                    flags:          extractClientFlags(sf),
                     signal,
                     tx_bitrate:     sta['tx bitrate']     || null,
                     rx_bitrate:     sta['rx bitrate']     || null,
                     connected_time: sta['connected time'] ? parseInt(sta['connected time']) : null,
+                    max_simul_links: sf && sf['max_simul_links'] ? parseInt(sf['max_simul_links']) : null,
                     links
                 });
             }
@@ -1349,6 +1351,23 @@ async function relayd_get() {
     return l2ok({ active: false, uplink_net: null });
 }
 
+// --- mlo-steerd wrappers ---
+
+async function steerd_get_status() {
+    const res = await layer1.steerd_status();
+    return res.ok ? l2ok(res.data) : l2err(res.error);
+}
+
+async function steerd_start() {
+    const res = await layer1.steerd_start();
+    return res.ok ? l2ok(null) : l2err(res.error);
+}
+
+async function steerd_stop() {
+    const res = await layer1.steerd_stop();
+    return res.ok ? l2ok(null) : l2err(res.error);
+}
+
 // --- MODULE EXPORT ---
 
 const Layer2 = {
@@ -1369,7 +1388,9 @@ const Layer2 = {
     // passthrough
     iface_stats:      layer1.iface_stats,
     wireless_backup:  layer1.wireless_backup,
-    wireless_restore: layer1.wireless_restore
+    wireless_restore: layer1.wireless_restore,
+    // steerd
+    steerd_get_status, steerd_start, steerd_stop
 };
 
 return baseclass.extend(Layer2);

@@ -961,6 +961,45 @@ async function wireless_restore(content) {
     }
 }
 
+// --- GROUP 8: mlo-steerd daemon control ---
+
+async function steerd_status() {
+    try {
+        const [pidRes, logRes] = await Promise.all([
+            fs.exec('/bin/sh', ['-c', 'pgrep -f mlo-steerd | head -1']),
+            fs.exec('/bin/sh', ['-c', 'tail -25 /tmp/steerd.log 2>/dev/null || true'])
+        ]);
+        const pid = (pidRes.stdout || '').trim();
+        return ok({
+            running:  pid !== '',
+            pid:      pid ? parseInt(pid) : null,
+            log:      (logRes.stdout || '').trim().split('\n').filter(Boolean)
+        });
+    } catch(e) {
+        return mkErr('exec_failed');
+    }
+}
+
+async function steerd_start() {
+    try {
+        const res = await fs.exec('/bin/sh', ['-c',
+            '(sh /root/mlo-steerd.sh </dev/null >/tmp/steerd.log 2>&1 &); sleep 1; pgrep -f mlo-steerd >/dev/null'
+        ]);
+        return res.code === 0 ? ok(null) : mkErr('start_failed');
+    } catch(e) {
+        return mkErr('exec_failed');
+    }
+}
+
+async function steerd_stop() {
+    try {
+        await fs.exec('/bin/sh', ['-c', 'kill $(pgrep -f mlo-steerd) 2>/dev/null; true']);
+        return ok(null);
+    } catch(e) {
+        return mkErr('exec_failed');
+    }
+}
+
 // --- Module export ---
 
 const Layer1 = {
@@ -1020,7 +1059,11 @@ const Layer1 = {
     system_logs,
     system_exec,
     wireless_backup,
-    wireless_restore
+    wireless_restore,
+    // GROUP 8: mlo-steerd
+    steerd_status,
+    steerd_start,
+    steerd_stop
 };
 
 return baseclass.extend(Layer1);
