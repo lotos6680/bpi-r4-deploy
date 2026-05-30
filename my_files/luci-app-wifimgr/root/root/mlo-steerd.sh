@@ -1,5 +1,5 @@
 #!/bin/sh
-# mlo-steerd v0.3 - MLO Link Steering Daemon + Neg-TTLM
+# mlo-steerd v0.4 - MLO Link Steering Daemon + Neg-TTLM + R-TWT
 #
 # Steering algorithm (per-link):
 #   Hard disable : SNR < SNR_HARD_LOW (ignore other params)
@@ -9,6 +9,12 @@
 #                  score > SCORE_ENABLE  → enable
 #                  score in between      → no change (hysteresis)
 #   Cooldown     : min COOLDOWN_S seconds between ATTLM actions
+#
+# R-TWT groups (WiFi 7 R2, recommendation=4):
+#   Group 1 (Voice): TID 6+7, ~524ms interval — guaranteed time slot for VoIP
+#   Group 2 (Video): TID 4+5, ~262ms interval — guaranteed time slot for video
+#   Combined with Neg-TTLM: Voice → time slot + 5G-only link
+#                            Video → time slot + 5G+6G links
 
 MLO_IF="ap-mld-1"
 INTERVAL=10
@@ -29,6 +35,12 @@ RETRIES_CONFIRM=15     # % max retries to confirm enable
 
 # Cooldown between ATTLM actions (seconds)
 COOLDOWN_S=30
+
+# R-TWT group configuration (WiFi 7 R2)
+RTWT_ENABLED=1
+RTWT_VOICE_ID=1     # Voice TIDs 6+7, mantissa=255, exponent=4096 → ~524ms interval
+RTWT_VIDEO_ID=2     # Video TIDs 4+5, mantissa=128, exponent=2048 → ~262ms interval
+RTWT_CHECK_INTERVAL=6  # re-verify groups every N main loop iterations
 
 # Link → frequency mapping
 FREQ_L0=2462
@@ -202,15 +214,59 @@ neg_ttlm_teardown() {
     hostapd_cli -i "$MLO_IF" negotiated_ttlm teardown "$1" >/dev/null 2>&1
 }
 
+# Check if R-TWT group id exists in current AP state
+btwt_exists() {
+    hostapd_cli -i "$MLO_IF" get_btwt 2>/dev/null | grep -q "btwt_id=$1 "
+}
+
+# Create R-TWT groups if missing. First add_btwt call may timeout (known FW delay)
+# but succeeds; a second call with same id returns FAIL (slot occupied) — that is OK.
+btwt_ensure() {
+    [ "$RTWT_ENABLED" -eq 0 ] && return
+    local changed=0
+    if ! btwt_exists "$RTWT_VOICE_ID"; then
+        hostapd_cli -i "$MLO_IF" add_btwt "$RTWT_VOICE_ID" 255 4096 7 \
+            recommendation=4 dl_tid_bitmap=0xC0 ul_tid_bitmap=0xC0 >/dev/null 2>&1
+        log "R-TWT: created Voice group id=$RTWT_VOICE_ID (TID 6+7, ~524ms)"
+        changed=1
+    fi
+    if ! btwt_exists "$RTWT_VIDEO_ID"; then
+        hostapd_cli -i "$MLO_IF" add_btwt "$RTWT_VIDEO_ID" 128 2048 7 \
+            recommendation=4 dl_tid_bitmap=0x30 ul_tid_bitmap=0x30 >/dev/null 2>&1
+        log "R-TWT: created Video group id=$RTWT_VIDEO_ID (TID 4+5, ~262ms)"
+        changed=1
+    fi
+    [ "$changed" -eq 0 ] && return
+    # Give FW a moment to register the groups in beacon
+    sleep 1
+}
+
+# Return R-TWT status string for log ("V+D" / "V" / "D" / "none")
+btwt_status() {
+    [ "$RTWT_ENABLED" -eq 0 ] && echo "off" && return
+    local v=0 d=0
+    btwt_exists "$RTWT_VOICE_ID" && v=1
+    btwt_exists "$RTWT_VIDEO_ID" && d=1
+    if [ "$v" -eq 1 ] && [ "$d" -eq 1 ]; then echo "V+D"
+    elif [ "$v" -eq 1 ]; then echo "V"
+    elif [ "$d" -eq 1 ]; then echo "D"
+    else echo "none"
+    fi
+}
+
 # --- main ---
 
-log "Started v0.3: if=$MLO_IF interval=${INTERVAL}s algo=weighted(SNR60+RET30+BUSY10) cooldown=${COOLDOWN_S}s"
+log "Started v0.4: if=$MLO_IF interval=${INTERVAL}s algo=weighted(SNR60+RET30+BUSY10) cooldown=${COOLDOWN_S}s rtwt=${RTWT_ENABLED}"
 log "Override: set via 'uci set mlo-steerd.global.mode=auto|all_on|5g_only && uci commit mlo-steerd'"
 
 WANT_DISABLE_6=0
 WANT_DISABLE_5=0
 NEG_TTLM_MACS=""
 LAST_ACTION=0
+RTWT_LOOP_CTR=0
+
+# Create R-TWT groups on startup
+btwt_ensure
 
 while true; do
 
@@ -331,9 +387,16 @@ while true; do
         STATUS="all links up | ret=${RET}% busy6G=${BUSY2}% busy5G=${BUSY1}%"
     fi
 
+    # --- R-TWT group maintenance (every RTWT_CHECK_INTERVAL iterations) ---
+    RTWT_LOOP_CTR=$(( RTWT_LOOP_CTR + 1 ))
+    if [ $(( RTWT_LOOP_CTR % RTWT_CHECK_INTERVAL )) -eq 0 ]; then
+        btwt_ensure
+    fi
+    RTWT_ST=$(btwt_status)
+
     # --- Per-client log ---
     log_clients "$MASK" "$SNR0_S" "$SNR1_S" "$SNR2_S" "$NEG_TTLM_MACS" "$MLMR_MACS"
-    log "$STATUS"
+    log "$STATUS | R-TWT:$RTWT_ST"
 
     sleep "$INTERVAL"
 done
