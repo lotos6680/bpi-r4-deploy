@@ -801,7 +801,7 @@ define Device/bananapi_bpi-r4-pro-8x
   DEVICE_DTS := mt7988a-bananapi-bpi-r4-pro-8x
   DEVICE_DTS_CONFIG := config-mt7988a-bananapi-bpi-r4-pro-8x
   $(call Device/bananapi_bpi-r4-common)
-  DEVICE_DTS_OVERLAY := mt7988a-bananapi-bpi-r4-pro-8x-emmc mt7988a-bananapi-bpi-r4-pro-8x-sd mt7988a-bananapi-bpi-r4-pro-8x-nvme-ssd2
+  DEVICE_DTS_OVERLAY := mt7988a-bananapi-bpi-r4-pro-8x-emmc mt7988a-bananapi-bpi-r4-pro-8x-sd mt7988a-bananapi-bpi-r4-pro-8x-nvme-ssd2 mt7988a-bananapi-bpi-r4-pro-8x-wifi-mt7996a
   UBINIZE_PARTS := fip=:$(STAGING_DIR_IMAGE)/mt7988_bananapi_bpi-r4-pro-8x-snand-u-boot.fip
 endef
 TARGET_DEVICES += bananapi_bpi-r4-pro-8x

@@ -11,8 +11,7 @@ rm -rf mtk-openwrt-feeds
 git clone --branch openwrt-25.12 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt; git checkout 99211b26fb3b9ed71d065a1fa35ce54a0d883944; cd -;
 
-tar xzf /home/ipsec/bpi-r4-openwrt-builder-pro/repo-cache/mtk-openwrt-feeds.tar.gz
-mv mtk-clone mtk-openwrt-feeds
+tar xzf /home/ipsec/mtk-feeds-cache.tar.gz
 
 cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic prepare
@@ -47,6 +46,8 @@ mkdir -p files/root/bpi-r4-install
 chmod +x files/root/bpi-r4-install/install-emmc.sh
 \cp ../my_files/bpi-r4-install/install-nvme.sh files/root/bpi-r4-install/
 chmod +x files/root/bpi-r4-install/install-nvme.sh
+\cp ../my_files/bpi-r4-install/install-nvme-unifi.sh files/root/bpi-r4-install/
+chmod +x files/root/bpi-r4-install/install-nvme-unifi.sh
 
 mkdir -p files/etc/uci-defaults
 cat > files/etc/uci-defaults/99-hostname << 'EOF'

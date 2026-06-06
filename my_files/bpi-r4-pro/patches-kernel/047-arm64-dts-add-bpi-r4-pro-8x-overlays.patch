@@ -2,7 +2,7 @@
 +++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-pro-8x-emmc.dtso
 --- 
 +++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-pro-8x-emmc.dtso	2026-05-24 12:54:27.112262471 +0200
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,62 @@
 +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
 +/*
 + * Copyright (C) 2021 MediaTek Inc.
@@ -27,6 +27,7 @@
 +			mmc-hs200-1_8v;
 +			mmc-hs400-1_8v;
 +			hs400-ds-delay = <0x12814>;
++			vmmc-supply = <&reg_3p3v>;
 +			vqmmc-supply = <&reg_1p8v>;
 +			non-removable;
 +			no-sd;
@@ -139,4 +140,89 @@
 +
 +&{/chosen} {
 +	rootdisk-nvme = <&pcie3>;
++};
+--- /dev/null
++++ b/arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-pro-8x-wifi-mt7996a.dtso
+@@ -0,0 +1,82 @@
++// SPDX-License-Identifier: (GPL-2.0 OR MIT)
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	compatible = "bananapi,bpi-r4-pro-8x", "mediatek,mt7988a";
++
++	fragment@0 {
++		target-path = "/";
++		__overlay__ {
++			wifi_12v: regulator-wifi-12v {
++				compatible = "regulator-fixed";
++				regulator-name = "wifi";
++				regulator-min-microvolt = <12000000>;
++				regulator-max-microvolt = <12000000>;
++				gpios = <&pio 4 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&imux3_wifi>;
++		__overlay__ {
++			wifi_eeprom_5g: eeprom@51 {
++				compatible = "atmel,24c02";
++				reg = <0x51>;
++				address-bits = <8>;
++				page-size = <8>;
++				size = <256>;
++
++				nvmem-layout {
++					compatible = "fixed-layout";
++					#address-cells = <1>;
++					#size-cells = <1>;
++
++					macaddr_5g: macaddr@0 {
++						reg = <0x0 0x6>;
++					};
++				};
++			};
++
++			wifi_eeprom_6g: eeprom@52 {
++				compatible = "atmel,24c02";
++				reg = <0x52>;
++				address-bits = <8>;
++				page-size = <8>;
++				size = <256>;
++
++				nvmem-layout {
++					compatible = "fixed-layout";
++					#address-cells = <1>;
++					#size-cells = <1>;
++
++					macaddr_6g: macaddr@0 {
++						reg = <0x0 0x6>;
++					};
++				};
++			};
++		};
++	};
++
++	fragment@2 {
++		target = <&pcie0>;
++		__overlay__ {
++			pcie@0,0 {
++				reg = <0x0000 0 0 0 0>;
++
++				wifi@0,0 {
++					compatible = "mediatek,mt76";
++					reg = <0x0000 0 0 0 0>;
++					nvmem-cell-names = "mac-address";
++					nvmem-cells = <&macaddr_5g>;
++				};
++			};
++		};
++	};
 +};

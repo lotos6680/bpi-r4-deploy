@@ -51,6 +51,13 @@ echo "Flashing Pro 8X image to NAND..."
 mtd -e nand write "${NAND_IMG}" nand
 
 echo ""
+echo "Initializing U-Boot environment..."
+ubidetach -p /dev/mtd2 2>/dev/null || true
+ubiattach -p /dev/mtd2
+fw_setenv -f nvme_boot "" 2>/dev/null && echo "OK: U-Boot env initialized." || echo "WARNING: fw_setenv failed -- env will initialize on first NAND boot."
+ubidetach -p /dev/mtd2 2>/dev/null || true
+
+echo ""
 echo "=================================================="
 echo "  DONE! Rescue system installed to NAND."
 echo "=================================================="

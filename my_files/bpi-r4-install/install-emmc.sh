@@ -13,7 +13,7 @@ NC='\033[0m'
 
 printf "\n"
 printf "=================================================\n"
-printf "  BPI-R4 eMMC Installer\n"
+printf "  BPI-R4 / BPI-R4 Pro 8X eMMC Installer\n"
 printf "=================================================\n"
 printf "\n"
 
@@ -21,18 +21,24 @@ printf "\n"
 
 printf "Select your board variant:\n"
 printf "\n"
-printf "  1) 4GB standard (WiFi)\n"
-printf "  2) 4GB wired (no WiFi)\n"
-printf "  3) 4GB PoE (WiFi)\n"
-printf "  4) 4GB PoE wired (no WiFi)\n"
-printf "  5) 8GB standard (WiFi)\n"
-printf "  6) 8GB wired (no WiFi)\n"
-printf "  7) 8GB PoE (WiFi)\n"
-printf "  8) 8GB PoE wired (no WiFi)\n"
-printf "  9) 8GB wired UniFi\n"
-printf " 10) 8GB PoE wired UniFi\n"
+printf "  BPI-R4:\n"
+printf "   1) 4GB standard (WiFi)\n"
+printf "   2) 4GB wired (no WiFi)\n"
+printf "   3) 4GB PoE (WiFi)\n"
+printf "   4) 4GB PoE wired (no WiFi)\n"
+printf "   5) 8GB standard (WiFi)\n"
+printf "   6) 8GB wired (no WiFi)\n"
+printf "   7) 8GB PoE (WiFi)\n"
+printf "   8) 8GB PoE wired (no WiFi)\n"
+printf "   9) 8GB wired UniFi\n"
+printf "  10) 8GB PoE wired UniFi\n"
 printf "\n"
-printf "Enter choice [1-10]: "
+printf "  BPI-R4 Pro 8X:\n"
+printf "  11) Pro standard (WiFi)\n"
+printf "  12) Pro wired (no WiFi)\n"
+printf "  13) Pro wired UniFi\n"
+printf "\n"
+printf "Enter choice [1-13]: "
 read VARIANT
 
 case "$VARIANT" in
@@ -46,6 +52,9 @@ case "$VARIANT" in
     8) GH_TAG="release-8gb-poe-wired";       EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-poe-8gb-emmc-img.bin" ;;
     9) GH_TAG="release-8gb-wired-unifi";     EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-8gb-emmc-img.bin" ;;
    10) GH_TAG="release-8gb-poe-wired-unifi"; EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-poe-8gb-emmc-img.bin" ;;
+   11) GH_TAG="release-pro-8x-standard";     EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-emmc-img.bin" ;;
+   12) GH_TAG="release-pro-8x-wired";        EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-emmc-img.bin" ;;
+   13) GH_TAG="release-pro-8x-unifi";        EMMC_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-emmc-img.bin" ;;
     *)
         printf "\n${RED}ERROR: Invalid choice!${NC}\n\n"
         exit 1
@@ -111,7 +120,6 @@ case "$USE_LOCAL" in
         printf "\n"
         printf "        INFO: Using local files from /tmp\n"
         printf "        Checking files...\n"
-        EMMC_IMG="/tmp/openwrt-mediatek-filogic-bananapi_bpi-r4-emmc-img.bin"
         if [ ! -f "$EMMC_IMG" ]; then
             printf "${RED}ERROR: %s not found!${NC}\n" "$EMMC_IMG"
             exit 1
@@ -240,6 +248,11 @@ printf "${GREEN}=================================================${NC}\n"
 printf "\n"
 printf "  Next steps:\n"
 printf "  1. Power off the device\n"
-printf "  2. Set DIP switch: SW3-A=1, SW3-B=0 (eMMC boot)\n"
+case "$VARIANT" in
+    11|12|13)
+        printf "  2. Set DIP switch to eMMC boot (SW1: 0001)\n" ;;
+    *)
+        printf "  2. Set DIP switch: SW3-A=1, SW3-B=0 (eMMC boot)\n" ;;
+esac
 printf "  3. Power on\n"
 printf "\n"
