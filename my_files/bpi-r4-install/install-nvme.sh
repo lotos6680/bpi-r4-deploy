@@ -319,7 +319,7 @@ fi
 
 printf "\n"
 
-MOUNTED=$(mount | grep "^/dev/nvme0" | awk '{print $1}')
+MOUNTED=$(mount | grep "^${NVME_DEV}" | awk '{print $1}')
 if [ -n "$MOUNTED" ]; then
     for DEV in $MOUNTED; do
         umount "$DEV" 2>/dev/null || true
@@ -337,27 +337,27 @@ sleep 2
 printf "        OK\n\n"
 
 printf "        Repartitioning (p1=256MB, p2=512MB, p3=data)...\n"
-sgdisk -d 1 -d 2 /dev/nvme0n1
-sgdisk -n 1:2048:526335    -t 1:8300 -c 1:boot       /dev/nvme0n1
-sgdisk -n 2:526336:1576959 -t 2:FFFF -c 2:production /dev/nvme0n1
-partprobe /dev/nvme0n1
+sgdisk -d 1 -d 2 "${NVME_DEV}"
+sgdisk -n 1:2048:526335    -t 1:8300 -c 1:boot       "${NVME_DEV}"
+sgdisk -n 2:526336:1576959 -t 2:FFFF -c 2:production "${NVME_DEV}"
+partprobe "${NVME_DEV}"
 sleep 2
 printf "        OK\n\n"
 
 printf "        Formatting boot partition (p1 ext4)...\n"
-mkfs.ext4 -F /dev/nvme0n1p1
+mkfs.ext4 -F "${NVME_DEV}p1"
 printf "        OK\n\n"
 
 printf "        Writing kernel to p1...\n"
 mkdir -p /mnt/nvme
-mount /dev/nvme0n1p1 /mnt/nvme
+mount "${NVME_DEV}p1" /mnt/nvme
 cp "$ITB" /mnt/nvme/"${ITB_NAME}"
 sync
-umount /dev/nvme0n1p1
+umount "${NVME_DEV}p1"
 printf "        OK -- kernel written to p1\n\n"
 
 printf "        Writing rootfs to p2 (raw FIT)...\n"
-dd if="$ITB" of=/dev/nvme0n1p2 bs=1M conv=fsync
+dd if="$ITB" of="${NVME_DEV}p2" bs=1M conv=fsync
 if [ $? -ne 0 ]; then
     printf "\n${RED}ERROR: dd rootfs failed.${NC}\n\n"; exit 1
 fi
@@ -365,12 +365,12 @@ sync
 printf "        OK -- rootfs written to p2\n\n"
 
 printf "        Creating data partition (p3)...\n"
-sgdisk -e /dev/nvme0n1
-sgdisk -n 3:0:0 -t 3:8300 -c 3:data /dev/nvme0n1
-partprobe /dev/nvme0n1
+sgdisk -e "${NVME_DEV}"
+sgdisk -n 3:0:0 -t 3:8300 -c 3:data "${NVME_DEV}"
+partprobe "${NVME_DEV}"
 sleep 2
-umount /dev/nvme0n1p3 2>/dev/null || true
-mkfs.ext4 -F -L data /dev/nvme0n1p3
+umount "${NVME_DEV}p3" 2>/dev/null || true
+mkfs.ext4 -F -L data "${NVME_DEV}p3"
 printf "        OK -- p3 data partition created\n\n"
 
 rm -f "$ITB" "$IMG"
@@ -379,14 +379,21 @@ rm -f "$ITB" "$IMG"
 
 printf "[ 7/7 ] Finalizing...\n\n"
 
-printf "        Setting U-Boot env for NVMe boot...\n"
-fw_setenv nvme_boot 1
-if [ $? -ne 0 ]; then
-    printf "${YELLOW}WARNING: fw_setenv failed -- set nvme_boot manually${NC}\n"
-else
-    printf "        OK -- nvme_boot=1 set\n"
+printf "${GREEN}=================================================\n"
+printf "  NVMe installation complete!\n"
+printf "=================================================${NC}\n\n"
+printf "  Rootfs written to %sp2 (production).\n" "$NVME_DEV"
+printf "  Data partition created at %sp3.\n\n" "$NVME_DEV"
+if [ "$IS_PRO" != "1" ]; then
+    printf "        Setting U-Boot env for NVMe boot...\n"
+    fw_setenv nvme_boot 1
+    if [ $? -ne 0 ]; then
+        printf "${YELLOW}WARNING: fw_setenv failed -- set nvme_boot manually${NC}\n"
+    else
+        printf "        OK -- nvme_boot=1 set\n"
+    fi
+    printf "\n"
 fi
-printf "\n"
 
 printf "${GREEN}=================================================\n"
 printf "  Installation complete! Rebooting...\n"

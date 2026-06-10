@@ -580,7 +580,8 @@
 +bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait ubi.block=0,fit
 +bootconf=config-mt7988a-bananapi-bpi-r4-pro-8x
 +bootconf_extra=mt7988a-bananapi-bpi-r4-pro-8x-emmc
-+bootcmd=if env exists nvme_boot ; then run boot_nvme ; else if pstore check ; then run boot_recovery ; else run boot_ubi ; fi ; fi
++bootcmd=if pstore check ; then run boot_recovery ; else run boot_auto ; fi
++boot_auto=run boot_nvme ; run boot_ubi
 +bootdelay=0
 +bootfile=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-initramfs-recovery.itb
 +bootfile_bl2=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-snand-preloader.bin
@@ -610,7 +611,7 @@
 +boot_production=led $bootled_pwr on ; run ubi_read_production && bootm $loadaddr#$bootconf#$bootconf_extra ; led $bootled_pwr off
 +boot_recovery=led $bootled_rec on ; run ubi_read_recovery && bootm $loadaddr#$bootconf ; led $bootled_rec off
 +boot_ubi=run boot_production ; run boot_recovery
-+boot_nvme=setenv bootconf_extra mt7988a-bananapi-bpi-r4-pro-8x-nvme-${nvme_slot} ; run boot_production ; setenv bootconf_extra
++boot_nvme=pci enum ; nvme scan ; if nvme dev 0 && ext4load nvme 0:1 $loadaddr /bpi-r4-pro-8x.itb ; then led $bootled_pwr on ; bootm $loadaddr#$bootconf#mt7988a-bananapi-bpi-r4-pro-8x-nvme-${nvme_slot} ; fi
 +nvme_slot=ssd2
 +boot_tftp_forever=led $bootled_rec on ; while true ; do run boot_tftp_recovery ; sleep 1 ; done
 +boot_tftp_production=tftpboot $loadaddr $bootfile_upg && env exists replacevol && iminfo $loadaddr && run ubi_write_production ; if env exists noboot ; then else bootm $loadaddr#$bootconf#$bootconf_extra ; fi
@@ -818,6 +819,13 @@
 +};
 +
 +&pio {
++	/* CN15 M.2 key-B power (SMRT pin): LOW = CN15 powered, HIGH = CN13 powered */
++	pcie-2-hog {
++		gpio-hog;
++		gpios = <79 GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++
 +	i2c1_pins: i2c1-pins {
 +		mux {
 +			function = "i2c";

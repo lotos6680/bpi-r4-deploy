@@ -11,7 +11,7 @@ tar xzf ${MTK_FEED_TARBALL:-/home/ipsec/mtk-feeds-cache.tar.gz}
 [ -d mtk-clone ] && mv mtk-clone mtk-openwrt-feeds
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
-#\cp -r my_files/999-sfp-11-rtl8261be-mdio-none.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
+\cp -r my_files/999-sfp-11-rtl8261be-mdio-none.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 #\cp -r my_files/999-sfp-15-oem-sfp10gt-ignore-los.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 \cp -r my_files/999-fix-00-xfrm-sw-sa-offload-ok.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 

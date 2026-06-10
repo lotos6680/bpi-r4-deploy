@@ -1,6 +1,6 @@
 #!/bin/sh
 # BPI-R4 Pro 8X - Install rescue system to NAND
-# Run from SD card: sh /root/bpi-r4-install/install-nand-pro8x.sh
+# Run from SD card: sh /root/install-dir/install-nand.sh
 
 set -e
 
@@ -21,7 +21,6 @@ echo "  BPI-R4 Pro 8X - Install rescue system to NAND"
 echo "=================================================="
 echo ""
 
-# Verify we are running from SD card
 if ! grep -q "fitrw" /proc/mounts 2>/dev/null; then
     echo "ERROR: This script must be run from the SD card!"
     echo "       Make sure the DIP switch is set to SD boot."
@@ -31,7 +30,6 @@ fi
 echo "OK: System is running from SD card."
 echo ""
 
-# Verify image exists
 if [ ! -f "${NAND_IMG}" ]; then
     echo "ERROR: Image file not found: ${NAND_IMG}"
     echo "       Download snand-img.bin to /tmp/ or pass path as argument."
@@ -41,7 +39,6 @@ fi
 echo "OK: Pro 8X image found ($(du -h ${NAND_IMG} | cut -f1))."
 echo ""
 
-# Verify NAND device is available
 if ! grep -q '"nand"' /proc/mtd 2>/dev/null; then
     echo "ERROR: NAND device not found in /proc/mtd!"
     exit 1
@@ -50,7 +47,6 @@ fi
 echo "OK: NAND device found."
 echo ""
 
-# Final warning before flashing
 echo "WARNING: The entire NAND flash will be overwritten!"
 echo "         Press ENTER to continue or CTRL+C to cancel."
 read _
@@ -60,13 +56,6 @@ echo "Flashing Pro 8X image to NAND..."
 mtd -e nand write "${NAND_IMG}" nand
 
 echo ""
-echo "Initializing U-Boot environment..."
-ubidetach -p /dev/mtd2 2>/dev/null || true
-ubiattach -p /dev/mtd2
-fw_setenv -f nvme_boot "" 2>/dev/null && echo "OK: U-Boot env initialized." || echo "WARNING: fw_setenv failed -- env will initialize on first NAND boot."
-ubidetach -p /dev/mtd2 2>/dev/null || true
-
-echo ""
 echo "=================================================="
 echo "  DONE! Rescue system installed to NAND."
 echo "=================================================="
@@ -74,7 +63,7 @@ echo ""
 echo "Next steps:"
 echo "  1. Power off the device"
 echo "  2. Switch DIP to NAND boot"
-echo "  3. Power on the device"
+echo "  3. Power on — U-Boot initializes env automatically on first boot"
 echo "  4. Login via SSH and run:"
-echo "     sh /root/bpi-r4-install/install-nvme.sh"
+echo "     sh /root/install-dir/install-nvme.sh"
 echo ""
