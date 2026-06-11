@@ -296,7 +296,7 @@
 +CONFIG_HEXDUMP=y
 --- /dev/null
 +++ b/configs/mt7988a_bananapi_bpi-r4-pro-8x-snand_defconfig
-@@ -0,0 +1,145 @@
+@@ -0,0 +1,147 @@
 +CONFIG_ARM=y
 +CONFIG_SYS_HAS_NONCACHED_MEMORY=y
 +CONFIG_POSITION_INDEPENDENT=y
@@ -368,6 +368,8 @@
 +CONFIG_CMD_FS_UUID=y
 +CONFIG_CMD_UBI=y
 +CONFIG_CMD_UBI_RENAME=y
++CONFIG_NVME=y
++CONFIG_CMD_NVME=y
 +CONFIG_OF_EMBED=y
 +CONFIG_ENV_OVERWRITE=y
 +CONFIG_ENV_IS_IN_UBI=y
@@ -693,7 +695,7 @@
 +};
 --- /dev/null
 +++ b/arch/arm/dts/mt7988a-bananapi-bpi-r4-pro-8x.dtsi
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,253 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (c) 2022 MediaTek Inc.
@@ -934,8 +936,13 @@
 +			};
 +
 +			partition@200000 {
++				label = "Factory";
++				reg = <0x200000 0x400000>;
++			};
++
++			partition@600000 {
 +				label = "ubi";
-+				reg = <0x200000 0x7e00000>;
++				reg = <0x600000 0xfa00000>;
 +				compatible = "linux,ubi";
 +			};
 +		};
