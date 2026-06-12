@@ -615,10 +615,7 @@
 +	status = "okay";
 +};
 +
-+/* M.2 key-B CN15 / key-M CN13 - GPIO79=LOW routes PCIe+USB3.2 to CN15 */
-+&pcie2 {
-+	status = "okay";
-+};
++/* pcie2 disabled: FN990 uses USB mode; PCIe clock on CN15 would force PCIe mode */
 +
 +/* M.2 key-M SSD */
 +&pcie3 {
