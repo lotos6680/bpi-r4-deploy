@@ -550,6 +550,14 @@
 +				gpio-controller;
 +				#gpio-cells = <2>;
 +				reg = <0x20>;
++
++				/* IO1_3 = GPIO11: pull-up holds BKEY-A (CN15) in reset by default */
++				bkey-a-rst-hog {
++					gpio-hog;
++					gpios = <11 GPIO_ACTIVE_HIGH>;
++					output-low;
++					line-name = "BKEY-A-RST";
++				};
 +			};
 +		};
 +
