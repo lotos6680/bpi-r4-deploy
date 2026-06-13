@@ -442,7 +442,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish release-pro-8x-unifi
-        if: github.event.inputs.variant == 'pro-wired'
+        if: github.event.inputs.variant == 'pro-wired' || github.event.inputs.variant == 'pro-unifi'
         run: |
           gh release delete release-pro-8x-unifi --yes 2>/dev/null || true
           gh release create release-pro-8x-unifi rel-pro-unifi/* \
