@@ -68,7 +68,6 @@ mkdir -p files/etc
 
 
 mkdir -p files/root/install-dir
-\cp ../my_files/bpi-r4-install/snand-img.bin files/root/install-dir/snand-img.bin
 \cp ../my_files/bpi-r4-install/install-nand-pro8x.sh files/root/install-dir/install-nand.sh
 chmod +x files/root/install-dir/install-nand.sh
 \cp ../my_files/bpi-r4-install/install-nvme.sh files/root/install-dir/install-nvme.sh

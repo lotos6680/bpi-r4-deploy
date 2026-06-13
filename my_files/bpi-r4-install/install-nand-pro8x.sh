@@ -4,15 +4,26 @@
 
 set -e
 
-# Image search order: explicit argument, /tmp/, embedded SD card copy
+GH_USER="woziwrt"
+GH_REPO="bpi-r4-deploy"
+GH_TAG="release-pro-8x-standard"
+SNAND_NAME="bpi-r4-pro-snand-img.bin"
+
+# Image search order: explicit argument, /tmp/, download from GitHub
 if [ -n "${1:-}" ]; then
     NAND_IMG="$1"
-elif [ -f "/root/install-dir/snand-img.bin" ]; then
-    NAND_IMG="/root/install-dir/snand-img.bin"
+elif [ -f "/tmp/${SNAND_NAME}" ]; then
+    NAND_IMG="/tmp/${SNAND_NAME}"
 else
-    echo "ERROR: snand-img.bin not found in /root/install-dir/"
-    echo "       This SD rescue image may be incomplete."
-    exit 1
+    echo "Downloading ${SNAND_NAME} from GitHub..."
+    wget -O "/tmp/${SNAND_NAME}" \
+        "https://github.com/${GH_USER}/${GH_REPO}/releases/download/${GH_TAG}/${SNAND_NAME}"
+    if [ $? -ne 0 ] || [ ! -s "/tmp/${SNAND_NAME}" ]; then
+        echo "ERROR: Download failed. Connect ethernet and try again."
+        rm -f "/tmp/${SNAND_NAME}"
+        exit 1
+    fi
+    NAND_IMG="/tmp/${SNAND_NAME}"
 fi
 
 echo ""
