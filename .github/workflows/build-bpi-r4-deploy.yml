@@ -11,6 +11,7 @@ on:
         options:
           - pro
           - pro-wired
+          - pro-unifi
           - standard
           - wired
       repo_commit:
@@ -60,7 +61,10 @@ jobs:
             echo "RELEASE_TAGS=release-pro-8x-standard" >> $GITHUB_ENV
           elif [ "$VARIANT" = "pro-wired" ]; then
             echo "BUILDER=./builder-pro-8x-wired.sh" >> $GITHUB_ENV
-            echo "RELEASE_TAGS=release-pro-8x-wired release-pro-8x-unifi" >> $GITHUB_ENV
+            echo "RELEASE_TAGS=release-pro-8x-wired" >> $GITHUB_ENV
+          elif [ "$VARIANT" = "pro-unifi" ]; then
+            echo "BUILDER=./builder-pro-8x-wired.sh" >> $GITHUB_ENV
+            echo "RELEASE_TAGS=release-pro-8x-unifi" >> $GITHUB_ENV
           else
             echo "BUILDER=./builder-wifimgr-universal.sh" >> $GITHUB_ENV
             echo "RELEASE_TAGS=release-4gb-standard release-4gb-poe release-8gb-standard release-8gb-poe" >> $GITHUB_ENV
