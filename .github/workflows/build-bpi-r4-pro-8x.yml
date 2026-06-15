@@ -146,8 +146,6 @@ jobs:
           cp "${FILOGIC}/openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-emmc-img.bin"            rel-pro/
           cp "${FILOGIC}/openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-snand-img.bin"           rel-pro/
           cp "${FILOGIC}/config.buildinfo"                                                          rel-pro/
-          cp rescue/bpi-r4-pro-rescue-sdcard.img.gz                                               rel-pro/
-          cp rescue/bpi-r4-pro-snand-img.bin                                                      rel-pro/
           cp unifi/unifi-setup.sh                                                                  rel-pro/
           cp unifi/rc.local                                                                        rel-pro/
           cp unifi/rc-network.sh                                                                   rel-pro/

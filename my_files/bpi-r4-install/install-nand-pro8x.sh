@@ -1,13 +1,39 @@
 #!/bin/sh
-# BPI-R4 Pro 8X - Install rescue system to NAND
+# BPI-R4 Pro 8X - Install OpenWrt to NAND
 # Run from SD card: sh /root/install-dir/install-nand.sh
 
 set -e
 
 GH_USER="woziwrt"
 GH_REPO="bpi-r4-deploy"
-GH_TAG="release-pro-8x-standard"
-SNAND_NAME="bpi-r4-pro-snand-img.bin"
+GH_TAG="release-pro-8x-wired"
+SNAND_NAME="openwrt-mediatek-filogic-bananapi_bpi-r4-pro-8x-snand-img.bin"
+
+echo ""
+echo "=================================================="
+echo "  BPI-R4 Pro 8X - Install OpenWrt to NAND"
+echo "=================================================="
+echo ""
+echo "  IMPORTANT: Internet connection (WAN) is required."
+echo ""
+printf "  Is the WAN cable connected? [y/N]: "
+read ANS
+case "$ANS" in
+    y|Y) ;;
+    *) echo "  Connect WAN cable and run this script again."; echo ""; exit 1 ;;
+esac
+echo ""
+
+echo "Checking internet connection..."
+if ! wget -q --spider --timeout=10 "https://github.com" 2>/dev/null; then
+    echo ""
+    echo "ERROR: No internet connection!"
+    echo "       Check WAN cable and router/modem, then try again."
+    echo ""
+    exit 1
+fi
+echo "OK: Internet connection available."
+echo ""
 
 # Image search order: explicit argument, /tmp/, download from GitHub
 if [ -n "${1:-}" ]; then
@@ -15,22 +41,16 @@ if [ -n "${1:-}" ]; then
 elif [ -f "/tmp/${SNAND_NAME}" ]; then
     NAND_IMG="/tmp/${SNAND_NAME}"
 else
-    echo "Downloading ${SNAND_NAME} from GitHub..."
+    echo "Downloading ${SNAND_NAME}..."
     wget -O "/tmp/${SNAND_NAME}" \
         "https://github.com/${GH_USER}/${GH_REPO}/releases/download/${GH_TAG}/${SNAND_NAME}"
     if [ $? -ne 0 ] || [ ! -s "/tmp/${SNAND_NAME}" ]; then
-        echo "ERROR: Download failed. Connect ethernet and try again."
+        echo "ERROR: Download failed."
         rm -f "/tmp/${SNAND_NAME}"
         exit 1
     fi
     NAND_IMG="/tmp/${SNAND_NAME}"
 fi
-
-echo ""
-echo "=================================================="
-echo "  BPI-R4 Pro 8X - Install rescue system to NAND"
-echo "=================================================="
-echo ""
 
 if ! grep -q "fitrw" /proc/mounts 2>/dev/null; then
     echo "ERROR: This script must be run from the SD card!"
@@ -73,8 +93,10 @@ echo "=================================================="
 echo ""
 echo "Next steps:"
 echo "  1. Power off the device"
-echo "  2. Switch DIP to NAND boot"
-echo "  3. Power on — U-Boot initializes env automatically on first boot"
-echo "  4. Login via SSH and run:"
+echo "  2. Set DIP switches: A=0, B=1 (NAND boot)"
+echo "  3. Power on"
+echo "     NOTE: U-Boot may show 'UBI: Bad EC magic in block XXXX' messages."
+echo "           This is NORMAL on first boot — U-Boot is initializing the NAND."
+echo "  4. Login via SSH or LuCI (http://192.168.1.1) and run:"
 echo "     sh /root/install-dir/install-nvme.sh"
 echo ""

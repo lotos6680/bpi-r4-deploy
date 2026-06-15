@@ -85,13 +85,13 @@ Complete install system that runs entirely on GitHub — no Linux machine needed
 
 ## DIP switch reference
 
-| Boot medium  | SW3-A | SW3-B |
-|--------------|-------|-------|
-| SD card      | 0     | 0     |
-| NAND rescue  | 0     | 1     |
-| eMMC         | 1     | 0     |
+| Boot medium  | A | B |
+|--------------|---|---|
+| SD card      | 1 | 1 |
+| NAND rescue  | 0 | 1 |
+| eMMC         | 1 | 0 |
 
-> **NVMe boot** is controlled by U-Boot environment, not DIP switch. After running `install-nvme.sh`, the device boots from NVMe automatically — as long as DIP is set to **NAND** (SW3-A=0, SW3-B=1).
+> **NVMe boot** is controlled by U-Boot environment, not DIP switch. After running `install-nvme.sh`, the device boots from NVMe automatically — as long as DIP is set to **NAND** (A=0, B=1).
 
 ---
 

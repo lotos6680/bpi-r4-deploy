@@ -70,17 +70,15 @@ mkdir -p files/etc
 mkdir -p files/root/install-dir
 \cp ../my_files/bpi-r4-install/install-nand-pro8x.sh files/root/install-dir/install-nand.sh
 chmod +x files/root/install-dir/install-nand.sh
-\cp ../my_files/bpi-r4-install/install-nvme.sh files/root/install-dir/install-nvme.sh
+\cp ../my_files/bpi-r4-install/install-nvme-pro8x.sh files/root/install-dir/install-nvme.sh
 chmod +x files/root/install-dir/install-nvme.sh
-\cp ../my_files/bpi-r4-install/install-emmc.sh files/root/install-dir/install-emmc.sh
+\cp ../my_files/bpi-r4-install/install-emmc-pro8x.sh files/root/install-dir/install-emmc.sh
 chmod +x files/root/install-dir/install-emmc.sh
 \cp ../my_files/bpi-r4-install/install-nvme-unifi.sh files/root/install-dir/install-nvme-unifi.sh
 chmod +x files/root/install-dir/install-nvme-unifi.sh
-\cp ../my_files/bpi-r4-install/install-menu.sh files/root/install-dir/install-menu.sh
-chmod +x files/root/install-dir/install-menu.sh
-\cp ../my_files/bpi-r4-install/boot-nvme files/root/install-dir/boot-nvme
-chmod +x files/root/install-dir/boot-nvme
 mkdir -p files/usr/sbin
+\cp ../my_files/bpi-r4-install/boot-nvme files/usr/sbin/boot-nvme
+chmod +x files/usr/sbin/boot-nvme
 \cp ../my_files/bpi-r4-pro/files/usr/sbin/boot-nand files/usr/sbin/boot-nand
 chmod +x files/usr/sbin/boot-nand
 
