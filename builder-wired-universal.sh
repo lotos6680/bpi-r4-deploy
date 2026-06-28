@@ -1,15 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
+# BUMP 2026-06-28 (HW overeno; predchozi base 7b8ce1e / 42c9ff = 6.12.93):
+#   OpenWrt:  6dead2869209f4ff9825f3169c129c5ef04f6273  (openwrt-25.12 HEAD)
+#   MTK SDK:  13f39a7448764466f0ab5eb290fdefd9a9d2335b  (github git01 HEAD)
+
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://git.openwrt.org/openwrt/openwrt.git openwrt
-cd openwrt; git checkout ${OPENWRT_COMMIT}; cd -;
+cd openwrt; git checkout ${OPENWRT_COMMIT:-6dead2869209f4ff9825f3169c129c5ef04f6273}; cd -;
 
 # BUMP 2026-06-24: tarball replaced by fresh clone from MTK GitHub (branch git01 = our line)
 git clone --branch git01 https://github.com/mediatek/mtk-openwrt-feeds mtk-openwrt-feeds
-( cd mtk-openwrt-feeds && git checkout 42c9ff6569658fd5a71944e25f5fe7b4b4e21437 )
+( cd mtk-openwrt-feeds && git checkout 13f39a7448764466f0ab5eb290fdefd9a9d2335b )
 
 #\cp -r my_files/feed_revision mtk-openwrt-feeds/autobuild/unified/
 
