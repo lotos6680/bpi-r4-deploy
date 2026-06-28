@@ -1,10 +1,11 @@
-# Build versions — HW tested 2026-06-16 (NAND + eMMC + NVMe, WiFi OK):
-#   OPENWRT_COMMIT: 949487e0900b92a87b5f5bc5db9861ce3480db6a
-#   MTK_COMMIT:     3f8797ce3efcf0ed534ae2db21b2c06b405d714b  (HEAD 2026-06-15)
+# Build base (default when no commit inputs given) — keep in sync with the builder scripts:
+#   OPENWRT_COMMIT: 6dead2869209f4ff9825f3169c129c5ef04f6273  (openwrt-25.12 HEAD, 2026-06-28)
+#   MTK_COMMIT:     13f39a7448764466f0ab5eb290fdefd9a9d2335b  (github git01 HEAD, 2026-06-28)
+# Bumped 2026-06-28, HW verified on both routers (prev base 949487e0 / 42c9ff = 6.12.92).
 #
-# Previous (tested ~2026-05):
-#   OPENWRT_COMMIT: 13ff2256e5dd9bc070f9a9c6a673bff4a9191837
-#   MTK_COMMIT:     dceb45f8cb945bce16f0e09f8d2cd974c9f0ce58
+# Previous bases:
+#   2026-06-16: 949487e0... / 3f8797ce... (6.12.92)
+#   ~2026-05:   13ff2256... / dceb45f8...
 
 name: Build BPI-R4 Pro 8X
 

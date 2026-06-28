@@ -1,14 +1,18 @@
 #!/bin/bash
 set -euo pipefail
 
+# BUMP 2026-06-28 (HW overeno; predchozi: 949487e0 / 42c9ff = 6.12.92):
+#   OpenWrt:  6dead2869209f4ff9825f3169c129c5ef04f6273  (openwrt-25.12 HEAD)
+#   MTK SDK:  13f39a7448764466f0ab5eb290fdefd9a9d2335b  (github git01 HEAD)
+
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
-cd openwrt; git checkout ${OPENWRT_COMMIT:-949487e0900b92a87b5f5bc5db9861ce3480db6a}; cd -;
+cd openwrt; git checkout ${OPENWRT_COMMIT:-6dead2869209f4ff9825f3169c129c5ef04f6273}; cd -;
 
 git clone --branch git01 https://github.com/mediatek/mtk-openwrt-feeds mtk-openwrt-feeds
-( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-42c9ff6569658fd5a71944e25f5fe7b4b4e21437} )
+( cd mtk-openwrt-feeds && git checkout ${MTK_COMMIT:-13f39a7448764466f0ab5eb290fdefd9a9d2335b} )
 
 \cp -r my_files/999-sfp-10-additional-quirks.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
 \cp -r my_files/999-sfp-11-rtl8261be-mdio-none.patch mtk-openwrt-feeds/25.12/files/target/linux/mediatek/patches-6.12
