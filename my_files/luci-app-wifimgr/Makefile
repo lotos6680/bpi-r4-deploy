@@ -15,6 +15,10 @@ include $(TOPDIR)/feeds/luci/luci.mk
 
 define Package/luci-app-wifimgr/postinst
 #!/bin/sh
+# Stamp the package version into the WebUI top-bar label.
+# Single source of truth = PKG_VERSION above; bumping it updates the UI automatically.
+sed -i 's/@@PKG_VERSION@@/$(PKG_VERSION)/' \
+	"$${IPKG_INSTROOT}/www/luci-static/resources/view/wifimgr/index.js" 2>/dev/null
 [ -x "$${IPKG_INSTROOT}/etc/init.d/mlo-steerd" ] && \
 	"$${IPKG_INSTROOT}/etc/init.d/mlo-steerd" enable
 exit 0
