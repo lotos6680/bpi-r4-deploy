@@ -55,6 +55,13 @@ mkdir -p files/etc/uci-defaults
 \cp -r ../my_files/99-set-hostname files/etc/uci-defaults/
 chmod +x files/etc/uci-defaults/99-set-hostname
 
+# LAN LED: mtk-led-fix programs mt7530 gphy port-LED registers at boot (link + tx/rx activity)
+mkdir -p files/etc/init.d
+\cp ../my_files/etc-files/init.d/mtk-led-fix files/etc/init.d/
+chmod +x files/etc/init.d/mtk-led-fix
+\cp ../my_files/etc-files/uci-defaults/95-mtk-led-fix-enable files/etc/uci-defaults/
+chmod +x files/etc/uci-defaults/95-mtk-led-fix-enable
+
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
